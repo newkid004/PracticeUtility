@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 public class BitFlag
 {
 	// Ref variant
@@ -8,7 +11,7 @@ public class BitFlag
 	protected bool _isBinary;
 
 	// Indexer
-	public virtual int this[int i] 
+	public virtual int this[int i]
 	{
 		get { return (_Container[getSafeContainIndex(i)] & getMask(i)) >> getInterval(i); }
 		set
@@ -65,7 +68,7 @@ public class BitFlag
 			throw new Exception("Not implemented bigger than 32");
 
 		bool isBin = true;
-		for(int i = 1; i <= BitSize; i <<= 1)
+		for (int i = 1; i <= BitSize; i <<= 1)
 		{
 			if (value == i)
 				break;
@@ -99,7 +102,7 @@ public class BitFlag
 
 		for (int i = 0; i < listOldValue.Count; ++i)
 		{
-			while((_nMaskCount * iCurrent) < (BitSize << i))
+			while ((_nMaskCount * iCurrent) < (BitSize << i))
 			{
 				int nOldBitIndex = _nMaskCount * (iCurrent % nOldBitContain);
 				int nOldValue = (listOldValue[i] & (nOldMask << nOldBitIndex)) >> nOldBitIndex;
@@ -139,6 +142,11 @@ public class BitFlag
 		return iContain;
 	}
 
+	public void Clear()
+	{
+		_Container.Clear();
+	}
+
 	/// <summary>
 	/// Same as '=' operator
 	/// </summary>
@@ -165,7 +173,8 @@ public class BitFlag
 	public void bitAnd(int i, int value)
 	{
 		int iContain = getSafeContainIndex(i);
-		_Container[iContain] = _Container[iContain] & ((value & MaskNumber) << getInterval(i));
+		int ninterval = getInterval(i);
+		_Container[iContain] = _Container[iContain] & (((value & MaskNumber) << ninterval) | ~(MaskNumber << ninterval));
 	}
 
 	/// <summary>
