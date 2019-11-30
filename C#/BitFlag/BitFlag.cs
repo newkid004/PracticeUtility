@@ -28,9 +28,6 @@ public class BitFlag
 		get { return _nMaskCount; }
 		set
 		{
-			if (_nMaskCount == value)
-				return;
-
 			RebuildContainer(value);
 
 			_nMaskCount = value;
@@ -42,10 +39,10 @@ public class BitFlag
 	}
 
 	// Variable property
-	private int _MaskNumber;
+	private int _MaskNumber = 1;
 	public int MaskNumber { get { return _MaskNumber; } }
 
-	private int _OneContain;
+	private int _OneContain = BitSize;
 	protected int OneContain { get { return _OneContain; } }
 
 	// Constructor
@@ -193,5 +190,13 @@ public class BitFlag
 	{
 		int iContain = getSafeContainIndex(i);
 		_Container[iContain] = _Container[iContain] ^ ((value & MaskNumber) << getInterval(i));
+	}
+
+	public int GetContainNumber(int index)
+	{
+		if (_Container.Count <= index)
+			return 0;
+
+		return _Container[index];
 	}
 }
