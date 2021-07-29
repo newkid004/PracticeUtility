@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 
+using UnityEngine;
+
 public static class CollectionExtend
 {
-#region // ----- List ----- //
+	#region // ----- List ----- //
 
 	public static int CountActive(this List<GameObject> list)
 	{
@@ -42,24 +44,24 @@ public static class CollectionExtend
 	public static void Shuffle<T>(this List<T> list, int nRangeMin = -1, int nRangeMax = -1)
 	{
 		int nCount = list.Count;
-	
+
 		for (int i = 0; i < nCount; ++i)
 		{
 			int nIdxRandom = Random.Range(0, nCount);
-	
+
 			T temp = list[i];
 			list[i] = list[nIdxRandom];
 			list[nIdxRandom] = temp;
 		}
 	}
 
-	public static T GetRandomItem<T>(this List<T> list)
-	{
-		if (list.Count <= 0)
-			return default(T);
-
-		return list[GC.GetRandom(0, list.Count)];
-	}
+	// public static T GetRandomItem<T>(this List<T> list)
+	// {
+	// 	if (list.Count <= 0)
+	// 		return default(T);
+	// 
+	// 	return list[GC.GetRandom(0, list.Count)];
+	// }
 
 	public static void Resize<T>(this List<T> list, int size, T initValue)
 	{
@@ -79,11 +81,11 @@ public static class CollectionExtend
 		Resize(list, size, new T());
 	}
 
-#endregion
+	#endregion
 
-#region // ----- Dictionary ----- //
+	#region // ----- Dictionary ----- //
 
-#region Dictionary.LoopLinear - Dictionary enumerator 내 foreach에 의한 boxing, unboxing 차단 메소드, 4.x에선 미사용
+	#region Dictionary.LoopLinear - Dictionary enumerator 내 foreach에 의한 boxing, unboxing 차단 메소드, 4.x에선 미사용
 
 	public static void LoopLinear<TKey, TValue>(this Dictionary<TKey, TValue> dict, System.Action<TValue> act)
 	{
@@ -153,57 +155,62 @@ public static class CollectionExtend
 	public class RequireStruct<T> where T : struct { private RequireStruct() { } }
 	public class RequireClass<T> where T : class { private RequireClass() { } }
 
-#region Dictionary.GetSafe - 값 획득, 실패 시 추가
+	#region Dictionary.GetSafe - 값 획득, 실패 시 추가
 
-	public static TDerive GetSafe<TKey, TValue, TDerive>(this Dictionary<TKey, TValue> dict, TKey key, TValue defValue = null, RequireClass<TDerive> PleaseIgnoreThisParameter = null) 
-		where TValue : class 
+	public static TDerive GetSafe<TKey, TValue, TDerive>(this Dictionary<TKey, TValue> dict, TKey key, TValue defValue = null, RequireClass<TDerive> PleaseIgnoreThisParameter = null)
+		where TValue : class
 		where TDerive : class, TValue, new()
 	{
-		if (!dict.ContainsKey(key))
-			dict.Add(key, defValue == null ? new TDerive() : defValue);
+		TValue value;
+		if (!dict.TryGetValue(key, out value))
+			dict.Add(key, defValue == null ? (value = new TDerive()) : defValue);
 
-		return (TDerive)dict[key];
+		return (TDerive)value;
 	}
 
-	public static TValue GetSafe<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue defValue = default(TValue), RequireStruct<TValue> PleaseIgnoreThisParameter = null) 
+	public static TValue GetSafe<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue defValue = default(TValue), RequireStruct<TValue> PleaseIgnoreThisParameter = null)
 		where TValue : struct
 	{
-		if (!dict.ContainsKey(key))
-			dict.Add(key, defValue);
+		TValue value;
+		if (!dict.TryGetValue(key, out value))
+			dict.Add(key, value = defValue);
 
-		return dict[key];
+		return value;
 	}
 
-	public static TValue GetSafe<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue defValue = null, RequireClass<TValue> PleaseIgnoreThisParameter = null) 
+	public static TValue GetSafe<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue defValue = null, RequireClass<TValue> PleaseIgnoreThisParameter = null)
 		where TValue : class, new()
 	{
-		if (!dict.ContainsKey(key))
-			dict.Add(key, defValue == null ? new TValue() : defValue);
+		TValue value;
+		if (!dict.TryGetValue(key, out value))
+			dict.Add(key, defValue == null ? (value = new TValue()) : defValue);
 
-		return dict[key];
+		return value;
 	}
 
-	public static TValue[] GetSafe<TKey, TValue>(this Dictionary<TKey, TValue[]> dict, TKey key, TValue[] defValue = default(TValue[]), RequireStruct<TValue> PleaseIgnoreThisParameter = null) 
+	public static TValue[] GetSafe<TKey, TValue>(this Dictionary<TKey, TValue[]> dict, TKey key, TValue[] defValue = default(TValue[]), RequireStruct<TValue> PleaseIgnoreThisParameter = null)
 		where TValue : struct
 	{
-		if (!dict.ContainsKey(key))
-			dict.Add(key, defValue);
+		TValue[] value;
+		if (!dict.TryGetValue(key, out value))
+			dict.Add(key, value = defValue);
 
-		return dict[key];
+		return value;
 	}
 
-#endregion
+	#endregion
 
-#region Dictionary.GetDef - 값 획득, 실패 시 Default 반환
+	#region Dictionary.GetDef - 값 획득, 실패 시 Default 반환
 
 	public static TDerive GetDef<TKey, TValue, TDerive>(this Dictionary<TKey, TValue> dict, TKey key, TValue defValue = null, RequireClass<TDerive> PleaseIgnoreThisParameter = null)
 		where TValue : class
 		where TDerive : class, TValue
 	{
-		if (!dict.ContainsKey(key))
+		TValue value;
+		if (!dict.TryGetValue(key, out value))
 			return (TDerive)defValue;
 
-		return (TDerive)dict[key];
+		return (TDerive)value;
 	}
 
 	public static TValue GetDef<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue defValue = default(TValue), RequireStruct<TValue> PleaseIgnoreThisParameter = null)
@@ -218,15 +225,16 @@ public static class CollectionExtend
 	public static TValue GetDef<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue defValue = null, RequireClass<TValue> PleaseIgnoreThisParameter = null)
 		where TValue : class
 	{
-		if (!dict.ContainsKey(key))
+		TValue value;
+		if (!dict.TryGetValue(key, out value))
 			return defValue;
 
-		return dict[key];
+		return value;
 	}
 
-#endregion
+	#endregion
 
-#region Dictionary.SetSafe - 값 설정, 실패 시 추가
+	#region Dictionary.SetSafe - 값 설정, 실패 시 추가
 
 	public static TDerive SetSafe<TKey, TValue, TDerive>(this Dictionary<TKey, TValue> dict, TKey key, TValue value, RequireClass<TDerive> PleaseIgnoreThisParameter = null)
 		where TValue : class
@@ -265,7 +273,7 @@ public static class CollectionExtend
 		return dict[key] = value;
 	}
 
-#endregion
+	#endregion
 
-#endregion
+	#endregion
 }
